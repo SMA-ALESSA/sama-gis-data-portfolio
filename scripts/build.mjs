@@ -2,18 +2,23 @@ import { access, cp, copyFile, mkdir, rm } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 
-const root = fileURLToPath(new URL('../', import.meta.url));
-const output = join(root, 'dist');
-await rm(output, { recursive: true, force: true });
-await mkdir(output, { recursive: true });
-await copyFile(join(root, 'index.html'), join(output, 'index.html'));
-await cp(join(root, 'public'), output, { recursive: true });
+const projectRoot = fileURLToPath(new URL('../', import.meta.url));
+const publicRoot = join(projectRoot, 'public');
+const outputRoot = join(projectRoot, 'dist');
 
-const required = [
+await rm(outputRoot, { recursive: true, force: true });
+await mkdir(outputRoot, { recursive: true });
+await copyFile(join(projectRoot, 'index.html'), join(outputRoot, 'index.html'));
+await cp(publicRoot, outputRoot, { recursive: true });
+
+const certificates = Array.from({ length: 9 }, (_, index) => `certificates/certificate-${index}.pdf`);
+const requiredFiles = [
   'index.html',
   'favicon.svg',
   'assets/saudi-hero-approved.webp',
-  ...[0, 1, 2, 3, 4, 6, 7, 8].map(n => `certificates/certificate-${n}.pdf`),
+  ...certificates,
 ];
-for (const file of required) await access(join(output, file));
-console.log(`SAMA portfolio ready: ${required.length} verified files in dist/`);
+for (const file of requiredFiles) {
+  await access(join(outputRoot, file));
+}
+console.log(`Portfolio prepared with ${requiredFiles.length} required files.`);
